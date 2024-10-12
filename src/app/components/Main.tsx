@@ -28,11 +28,9 @@ export default function Main() {
     if (!longUrl) {
       setError("Please enter long URL.");
       return;
-    } else if (longUrl.length < 50) {
+    } else if (longUrl.length < 100) {
       setError("Long URL must be at least 100 characters.");
       return;
-    } else {
-      setError("");
     }
 
     try {
@@ -91,22 +89,24 @@ export default function Main() {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
+    const shortUrl = formData.get("shortUrl") as string;
     const longUrl = formData.get("longUrl") as string;
 
-    if (!longUrl) {
+    if (!shortUrl) {
+      setError("Please enter short URL.");
+      return;
+    } else if (!longUrl) {
       setError("Please enter long URL.");
       return;
-    } else if (longUrl.length < 50) {
+    } else if (longUrl.length < 100) {
       setError("Long URL must be at least 100 characters.");
       return;
-    } else {
-      setError("");
     }
 
     try {
       setLoading(true);
 
-      await fetch("/api", {
+      await fetch(`/api:${shortUrl}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
