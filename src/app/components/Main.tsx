@@ -6,10 +6,7 @@ export default function Main() {
   const [method, setMethod] = useState("create");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [createData, setCreateData] = useState<{
-    longUrl: string;
-    shortUrl: string;
-  }>();
+  const [shortUrl, setShortUrl] = useState("");
   const createFormRef = useRef<HTMLFormElement>(null);
 
   async function handleCreate(event: React.FormEvent<HTMLFormElement>) {
@@ -39,10 +36,8 @@ export default function Main() {
         body: JSON.stringify({ longUrl }),
       });
 
-      const data = await response.json();
-      setCreateData(data);
-
-      createFormRef.current?.reset();
+      const { shortUrl } = await response.json();
+      setShortUrl(shortUrl);
     } catch (error) {
       console.error(error);
       setError("An error occurred. Please try again.");
@@ -181,9 +176,12 @@ export default function Main() {
         <div>
           {error && <div className="text-danger">{error}</div>}
           {loading && <div className="spinner-border"></div>}
-          {createData && (
+          {shortUrl && (
             <div className="alert alert-success">
-              Short URL: <a href={createData.shortUrl}>{createData.shortUrl}</a>
+              Short URL:{" "}
+              <a href={shortUrl} target="_blank" rel="noreferrer noopener">
+                {shortUrl}
+              </a>
             </div>
           )}
         </div>
