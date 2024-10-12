@@ -1,9 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 export default function Main() {
   const [method, setMethod] = useState("create");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [createData, setCreateData] = useState<{
+    longUrl: string;
+    shortUrl: string;
+  }>();
+  const createFormRef = useRef<HTMLFormElement>(null);
+
+  async function handleCreate(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const longUrl = formData.get("longUrl") as string;
+
+    if (!longUrl) {
+      setError("Please enter long URL.");
+      return;
+    } else if (longUrl.length < 50) {
+      setError("Long URL must be at least 100 characters.");
+      return;
+    } else {
+      setError("");
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch("/api", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ longUrl }),
+      });
+
+      const data = await response.json();
+      setCreateData(data);
+
+      createFormRef.current?.reset();
+    } catch (error) {
+      console.error(error);
+      setError("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="container-fluid flex-grow-1 mt-5">
       <div
@@ -20,7 +67,7 @@ export default function Main() {
           <option value="delete">Delete</option>
         </select>
         {method === "create" && (
-          <form className="w-100">
+          <form className="w-100" ref={createFormRef} onSubmit={handleCreate}>
             <div className="form-floating mb-3">
               <input
                 type="url"
@@ -130,6 +177,16 @@ export default function Main() {
             </div>
           </form>
         )}
+
+        <div>
+          {error && <div className="text-danger">{error}</div>}
+          {loading && <div className="spinner-border"></div>}
+          {createData && (
+            <div className="alert alert-success">
+              Short URL: <a href={createData.shortUrl}>{createData.shortUrl}</a>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
