@@ -7,6 +7,15 @@ export default function Main() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [shortUrl, setShortUrl] = useState("");
+  const [readData, setReadData] = useState<{
+    id: string;
+    longUrl: string;
+    shortUrl: string;
+    usageCount: number;
+    createdAt: string;
+    updatedAt: string;
+  }>();
+
   const createFormRef = useRef<HTMLFormElement>(null);
 
   async function handleCreate(event: React.FormEvent<HTMLFormElement>) {
@@ -38,6 +47,37 @@ export default function Main() {
 
       const { shortUrl } = await response.json();
       setShortUrl(shortUrl);
+    } catch (error) {
+      console.error(error);
+      setError("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRead(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const shortUrl = formData.get("shortUrl") as string;
+
+    if (!shortUrl) {
+      setError("Please enter short URL.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(`/api:${shortUrl}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+      setReadData(data);
     } catch (error) {
       console.error(error);
       setError("An error occurred. Please try again.");
@@ -83,7 +123,7 @@ export default function Main() {
           </form>
         )}
         {method === "read" && (
-          <form className="w-100">
+          <form className="w-100" onSubmit={handleRead}>
             <div className="form-floating mb-3">
               <input
                 type="url"
@@ -182,6 +222,30 @@ export default function Main() {
               <a href={shortUrl} target="_blank" rel="noreferrer noopener">
                 {shortUrl}
               </a>
+            </div>
+          )}
+          {readData && (
+            <div className="alert alert-success">
+              id: {readData.id}
+              Long URL:{" "}
+              <a
+                href={readData.longUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                {readData.longUrl}
+              </a>
+              Short URL:{" "}
+              <a
+                href={readData.shortUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                {readData.shortUrl}
+              </a>
+              usageCount: {readData.usageCount}
+              createdAt: {readData.createdAt}
+              updatedAt: {readData.updatedAt}
             </div>
           )}
         </div>
