@@ -15,6 +15,7 @@ export default function Main() {
     createdAt: string;
     updatedAt: string;
   }>();
+  const [message, setMessage] = useState("");
 
   const createFormRef = useRef<HTMLFormElement>(null);
 
@@ -86,6 +87,42 @@ export default function Main() {
     }
   }
 
+  async function handleUpdate(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const longUrl = formData.get("longUrl") as string;
+
+    if (!longUrl) {
+      setError("Please enter long URL.");
+      return;
+    } else if (longUrl.length < 50) {
+      setError("Long URL must be at least 100 characters.");
+      return;
+    } else {
+      setError("");
+    }
+
+    try {
+      setLoading(true);
+
+      await fetch("/api", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ longUrl }),
+      });
+
+      setMessage("Long URL updated successfully.");
+    } catch (error) {
+      console.error(error);
+      setError("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="container-fluid flex-grow-1 mt-5">
       <div
@@ -144,7 +181,7 @@ export default function Main() {
           </form>
         )}
         {method === "update" && (
-          <form className="w-100">
+          <form className="w-100" onSubmit={handleUpdate}>
             <div className="form-floating mb-3">
               <input
                 type="url"
@@ -248,6 +285,7 @@ export default function Main() {
               updatedAt: {readData.updatedAt}
             </div>
           )}
+          {message && <div className="text-success">{message}</div>}
         </div>
       </div>
     </main>
