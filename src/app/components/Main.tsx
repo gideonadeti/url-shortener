@@ -28,13 +28,17 @@ export default function Main() {
     if (!longUrl) {
       setError("Please enter long URL.");
       return;
-    } else if (longUrl.length < 100) {
-      setError("Long URL must be at least 100 characters.");
+    } else if (longUrl.length < 50) {
+      setError("Long URL must be at least 50 characters.");
       return;
     }
 
     try {
       setLoading(true);
+      setError("");
+      setMessage("");
+      setShortUrl("");
+      setReadData(undefined);
 
       const response = await fetch("/api", {
         method: "POST",
@@ -44,8 +48,9 @@ export default function Main() {
         body: JSON.stringify({ longUrl }),
       });
 
-      const { shortUrl } = await response.json();
+      const shortUrl = await response.json();
       setShortUrl(shortUrl);
+      createFormRef.current?.reset();
     } catch (error) {
       console.error(error);
       setError("An error occurred. Please try again.");
@@ -67,6 +72,10 @@ export default function Main() {
 
     try {
       setLoading(true);
+      setError("");
+      setMessage("");
+      setShortUrl("");
+      setReadData(undefined);
 
       const response = await fetch(`/api:${shortUrl}`, {
         method: "GET",
@@ -98,13 +107,17 @@ export default function Main() {
     } else if (!longUrl) {
       setError("Please enter long URL.");
       return;
-    } else if (longUrl.length < 100) {
-      setError("Long URL must be at least 100 characters.");
+    } else if (longUrl.length < 50) {
+      setError("Long URL must be at least 50 characters.");
       return;
     }
 
     try {
       setLoading(true);
+      setError("");
+      setMessage("");
+      setShortUrl("");
+      setReadData(undefined);
 
       await fetch(`/api:${shortUrl}`, {
         method: "PUT",
@@ -136,6 +149,10 @@ export default function Main() {
 
     try {
       setLoading(true);
+      setError("");
+      setMessage("");
+      setShortUrl("");
+      setReadData(undefined);
 
       await fetch(`/api:${shortUrl}`, {
         method: "DELETE",
@@ -280,13 +297,18 @@ export default function Main() {
           </form>
         )}
 
-        <div>
-          {error && <div className="text-danger">{error}</div>}
+        <div className="d-flex flex-column align-items-center gap-1">
           {loading && <div className="spinner-border"></div>}
+          {error && <div className="text-danger">{error}</div>}
           {shortUrl && (
-            <div className="alert alert-success">
+            <div>
               Short URL:{" "}
-              <a href={shortUrl} target="_blank" rel="noreferrer noopener">
+              <a
+                href={shortUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-decoration-none"
+              >
                 {shortUrl}
               </a>
             </div>
