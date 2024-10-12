@@ -123,6 +123,36 @@ export default function Main() {
     }
   }
 
+  async function handleDelete(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const shortUrl = formData.get("shortUrl") as string;
+
+    if (!shortUrl) {
+      setError("Please enter short URL.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await fetch(`/api:${shortUrl}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      setMessage("Short URL deleted successfully.");
+    } catch (error) {
+      console.error(error);
+      setError("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="container-fluid flex-grow-1 mt-5">
       <div
@@ -224,7 +254,7 @@ export default function Main() {
           </form>
         )}
         {method === "delete" && (
-          <form className="w-100">
+          <form className="w-100" onSubmit={handleDelete}>
             <div className="form-floating mb-3">
               <input
                 type="url"
