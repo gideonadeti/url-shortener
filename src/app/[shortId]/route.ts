@@ -15,7 +15,7 @@ export async function GET(
 
     const { longUrl } = url;
 
-    return new Response(JSON.stringify(longUrl), { status: 200 });
+    return Response.redirect(longUrl);
   } catch (error) {
     console.error(error);
     new Response("Internal Server Error", { status: 500 });
