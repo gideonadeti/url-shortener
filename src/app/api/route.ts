@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     } else {
       const shortId = nanoid(7);
       const shortUrl = `https://${req.headers.get("host")}/${shortId}`;
-      url = await createUrl(longUrl, shortUrl);
+      url = await createUrl(longUrl, shortUrl, shortId);
 
       return new Response(JSON.stringify(shortUrl), { status: 201 });
     }
