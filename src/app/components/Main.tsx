@@ -3,20 +3,22 @@
 import { useState, useRef, useEffect } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 
+interface ReadData {
+  id: string;
+  longUrl: string;
+  shortUrl: string;
+  shortId: string;
+  usageCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function Main() {
   const [method, setMethod] = useState("create");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [shortUrl, setShortUrl] = useState("");
-  const [readData, setReadData] = useState<{
-    id: string;
-    longUrl: string;
-    shortUrl: string;
-    shortId: string;
-    usageCount: number;
-    createdAt: string;
-    updatedAt: string;
-  }>();
+  const [readData, setReadData] = useState<ReadData>();
   const [message, setMessage] = useState("");
 
   const createFormRef = useRef<HTMLFormElement>(null);
