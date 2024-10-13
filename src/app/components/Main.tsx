@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 
 export default function Main() {
@@ -21,6 +21,13 @@ export default function Main() {
 
   const createFormRef = useRef<HTMLFormElement>(null);
   const readFormRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    setError("");
+    setMessage("");
+    setShortUrl("");
+    setReadData(undefined);
+  }, [method]);
 
   async function handleCreate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
