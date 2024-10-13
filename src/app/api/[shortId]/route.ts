@@ -1,4 +1,4 @@
-import { readUrlByShortId, updateUrl } from "../../../../prisma/db";
+import { readUrlByShortId, updateUrl, deleteUrl } from "../../../../prisma/db";
 
 export async function GET(
   req: Request,
@@ -42,7 +42,32 @@ export async function PUT(
     }
 
     await updateUrl(url.id, longUrl);
-    return new Response(JSON.stringify(url), { status: 200 });
+    return new Response("URL updated successfully.", { status: 200 });
+  } catch (error) {
+    console.error(error);
+    return new Response(JSON.stringify({ error: "An error occurred." }), {
+      status: 500,
+    });
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { shortId: string } }
+) {
+  const shortId = params.shortId;
+
+  try {
+    const url = await readUrlByShortId(shortId);
+
+    if (!url) {
+      return new Response(JSON.stringify({ error: "Invalid short URL." }), {
+        status: 404,
+      });
+    }
+
+    await deleteUrl(url.id);
+    return new Response("URL deleted successfully.", { status: 200 });
   } catch (error) {
     console.error(error);
     return new Response(JSON.stringify({ error: "An error occurred." }), {

@@ -68,3 +68,16 @@ export async function updateUrl(id: string, longUrl: string) {
     throw error;
   }
 }
+
+export async function deleteUrl(id: string) {
+  try {
+    await prismaClient.url.delete({
+      where: {
+        id,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}

@@ -178,6 +178,13 @@ export default function Main() {
       return;
     }
 
+    const shortId = shortUrl.split("/").pop();
+
+    if (!shortId) {
+      setError("Invalid short URL.");
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
@@ -185,12 +192,17 @@ export default function Main() {
       setShortUrl("");
       setReadData(undefined);
 
-      await fetch(`/api:${shortUrl}`, {
+      const response = await fetch(`/api/${shortId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update URL.");
+      }
 
       setMessage("Short URL deleted successfully.");
     } catch (error) {
