@@ -52,3 +52,19 @@ export async function readUrlByShortId(shortId: string) {
     throw error;
   }
 }
+
+export async function updateUrl(id: string, longUrl: string) {
+  try {
+    await prismaClient.url.update({
+      where: {
+        id,
+      },
+      data: {
+        longUrl,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}

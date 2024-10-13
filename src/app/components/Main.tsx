@@ -131,6 +131,13 @@ export default function Main() {
       return;
     }
 
+    const shortId = shortUrl.split("/").pop();
+
+    if (!shortId) {
+      setError("Invalid short URL.");
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
@@ -138,13 +145,18 @@ export default function Main() {
       setShortUrl("");
       setReadData(undefined);
 
-      await fetch(`/api:${shortUrl}`, {
+      const response = await fetch(`/api/${shortId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ longUrl }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update URL.");
+      }
 
       setMessage("Long URL updated successfully.");
     } catch (error) {
