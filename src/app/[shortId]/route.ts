@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-
 import { readUrlByShortId } from "../../../prisma/db";
 
 export async function GET(
@@ -17,7 +15,7 @@ export async function GET(
 
     const { longUrl } = url;
 
-    redirect(longUrl);
+    return new Response(JSON.stringify(longUrl), { status: 200 });
   } catch (error) {
     console.error(error);
     new Response("Internal Server Error", { status: 500 });
