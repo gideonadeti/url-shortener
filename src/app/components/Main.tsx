@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { formatDistanceToNow, format } from "date-fns";
 
 export default function Main() {
   const [method, setMethod] = useState("create");
@@ -11,6 +12,7 @@ export default function Main() {
     id: string;
     longUrl: string;
     shortUrl: string;
+    shortId: string;
     usageCount: number;
     createdAt: string;
     updatedAt: string;
@@ -18,6 +20,7 @@ export default function Main() {
   const [message, setMessage] = useState("");
 
   const createFormRef = useRef<HTMLFormElement>(null);
+  const readFormRef = useRef<HTMLFormElement>(null);
 
   async function handleCreate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -70,6 +73,13 @@ export default function Main() {
       return;
     }
 
+    const shortId = shortUrl.split("/").pop();
+
+    if (!shortId) {
+      setError("Invalid short URL.");
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
@@ -77,7 +87,7 @@ export default function Main() {
       setShortUrl("");
       setReadData(undefined);
 
-      const response = await fetch(`/api:${shortUrl}`, {
+      const response = await fetch(`/api/${shortId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -85,7 +95,9 @@ export default function Main() {
       });
 
       const data = await response.json();
+      console.log(data);
       setReadData(data);
+      readFormRef.current?.reset();
     } catch (error) {
       console.error(error);
       setError("An error occurred. Please try again.");
@@ -207,7 +219,7 @@ export default function Main() {
           </form>
         )}
         {method === "read" && (
-          <form className="w-100" onSubmit={handleRead}>
+          <form className="w-100" onSubmit={handleRead} ref={readFormRef}>
             <div className="form-floating mb-3">
               <input
                 type="url"
@@ -314,28 +326,39 @@ export default function Main() {
             </div>
           )}
           {readData && (
-            <div className="alert alert-success">
-              id: {readData.id}
-              Long URL:{" "}
-              <a
-                href={readData.longUrl}
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                {readData.longUrl}
-              </a>
-              Short URL:{" "}
-              <a
-                href={readData.shortUrl}
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                {readData.shortUrl}
-              </a>
-              usageCount: {readData.usageCount}
-              createdAt: {readData.createdAt}
-              updatedAt: {readData.updatedAt}
-            </div>
+            <table className="table table-bordered">
+              <tbody>
+                {Object.entries(readData).map(([key, value]) => (
+                  <tr key={key}>
+                    <td>
+                      <strong>{key}</strong>
+                    </td>
+                    <td>
+                      {typeof value === "string" &&
+                      (key === "longUrl" || key === "shortUrl") ? (
+                        <a
+                          href={value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-decoration-none"
+                        >
+                          {value}
+                        </a>
+                      ) : key === "createdAt" || key === "updatedAt" ? (
+                        `${format(
+                          value,
+                          "EEE, MMM d, yyyy, hh:mm:ss a"
+                        )} (${formatDistanceToNow(value, {
+                          addSuffix: true,
+                        })})`
+                      ) : (
+                        value
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
           {message && <div className="text-success">{message}</div>}
         </div>
