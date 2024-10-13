@@ -24,6 +24,7 @@ export default function Main() {
   const createFormRef = useRef<HTMLFormElement>(null);
   const readFormRef = useRef<HTMLFormElement>(null);
 
+  // Whenever user changes method, reset states
   useEffect(() => {
     setError("");
     setMessage("");
