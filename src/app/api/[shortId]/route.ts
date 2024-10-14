@@ -32,18 +32,19 @@ export async function PUT(
     const url = await readUrlByShortId(shortId);
 
     if (!url) {
-      return new Response(JSON.stringify({ error: "Invalid short URL." }), {
-        status: 404,
-      });
+      return Response.json({ error: "Invalid short URL." }, { status: 404 });
     }
 
     await updateUrl(url.id, longUrl);
-    return new Response("URL updated successfully.", { status: 200 });
+
+    return Response.json(
+      { message: "Long URL updated successfully." },
+      { status: 200 }
+    );
   } catch (error) {
     console.error(error);
-    return new Response(JSON.stringify({ error: "An error occurred." }), {
-      status: 500,
-    });
+
+    return Response.json({ error: "An error occurred." }, { status: 500 });
   }
 }
 
