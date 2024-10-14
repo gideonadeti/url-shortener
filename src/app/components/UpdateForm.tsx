@@ -50,6 +50,11 @@ export default function UpdateForm({
         body: JSON.stringify({ longUrl }),
       });
 
+      if (!response.ok) {
+        onError(new Error("Something went wrong."));
+        return;
+      }
+
       const data = await response.json();
 
       onSuccess({}, data.message);

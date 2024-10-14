@@ -41,6 +41,11 @@ export default function ReadForm({
         },
       });
 
+      if (!response.ok) {
+        onError(new Error("Something went wrong."));
+        return;
+      }
+
       const data = await response.json();
 
       onSuccess(data.url);
@@ -48,7 +53,7 @@ export default function ReadForm({
       formRef.current?.reset();
     } catch (error) {
       console.error(error);
-      
+
       onError(error as Error);
     } finally {
       setLoading(false);

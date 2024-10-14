@@ -42,6 +42,11 @@ export default function CreateForm({
         body: JSON.stringify({ longUrl }),
       });
 
+      if (!response.ok) {
+        onError(new Error("Something went wrong."));
+        return;
+      }
+
       const data = await response.json();
 
       onSuccess(data, "");
@@ -49,7 +54,7 @@ export default function CreateForm({
       formRef.current?.reset();
     } catch (error) {
       console.error(error);
-      
+
       onError(error as Error);
     } finally {
       stopFetching();
