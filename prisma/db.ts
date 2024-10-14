@@ -81,3 +81,21 @@ export async function deleteUrl(id: string) {
     throw error;
   }
 }
+
+export async function updateUsageCount(id: string) {
+  try {
+    await prismaClient.url.update({
+      where: {
+        id,
+      },
+      data: {
+        usageCount: {
+          increment: 1,
+        },
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}

@@ -1,4 +1,4 @@
-import { readUrlByShortId } from "../../../prisma/db";
+import { readUrlByShortId, updateUsageCount } from "../../../prisma/db";
 
 export async function GET(
   req: Request,
@@ -10,14 +10,17 @@ export async function GET(
     const url = await readUrlByShortId(shortId);
 
     if (!url) {
-      return new Response("Invalid short URL.", { status: 404 });
+      return Response.json({ error: "Invalid short URL." }, { status: 404 });
     }
+
+    await updateUsageCount(url.id);
 
     const { longUrl } = url;
 
     return Response.redirect(longUrl);
   } catch (error) {
     console.error(error);
-    new Response("Internal Server Error", { status: 500 });
+
+    return Response.json({ error: "An error occurred." }, { status: 500 });
   }
 }
