@@ -38,7 +38,7 @@ export async function PUT(
     await updateUrl(url.id, longUrl);
 
     return Response.json(
-      { message: "Long URL updated successfully." },
+      { message: "Short URL updated successfully." },
       { status: 200 }
     );
   } catch (error) {
