@@ -1,220 +1,54 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 
-interface ReadData {
-  id: string;
-  longUrl: string;
-  shortUrl: string;
-  shortId: string;
-  usageCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Method } from "../types";
+import { UrlData } from "../types";
+import CreateForm from "./CreateForm";
+import ReadForm from "./ReadForm";
+import UpdateForm from "./UpdateForm";
+import DeleteForm from "./DeleteForm";
 
 export default function Main() {
-  const [method, setMethod] = useState("create");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [shortUrl, setShortUrl] = useState("");
-  const [readData, setReadData] = useState<ReadData>();
-  const [message, setMessage] = useState("");
+  const [method, setMethod] = useState<Method>("create");
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [urlData, setUrlData] = useState<UrlData | null>(null);
+  const [message, setMessage] = useState<string>("");
 
-  const createFormRef = useRef<HTMLFormElement>(null);
-  const readFormRef = useRef<HTMLFormElement>(null);
-
-  // Whenever user changes method, reset states
+  // Reset states when method changes
   useEffect(() => {
-    setError("");
-    setMessage("");
-    setShortUrl("");
-    setReadData(undefined);
+    resetStates();
   }, [method]);
 
-  async function handleCreate(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const formData = new FormData(event.currentTarget);
-    const longUrl = formData.get("longUrl") as string;
-
-    if (!longUrl) {
-      setError("Please enter long URL.");
-      return;
-    } else if (longUrl.length < 50) {
-      setError("Long URL must be at least 50 characters.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError("");
-      setMessage("");
-      setShortUrl("");
-      setReadData(undefined);
-
-      const response = await fetch("/api", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ longUrl }),
-      });
-
-      const shortUrl = await response.json();
-      setShortUrl(shortUrl);
-      createFormRef.current?.reset();
-    } catch (error) {
-      console.error(error);
-      setError("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  function resetStates() {
+    setError("");
+    setMessage("");
+    setUrlData(null);
   }
 
-  async function handleRead(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const formData = new FormData(event.currentTarget);
-    const shortUrl = formData.get("shortUrl") as string;
-
-    if (!shortUrl) {
-      setError("Please enter short URL.");
-      return;
-    }
-
-    const shortId = shortUrl.split("/").pop();
-
-    if (!shortId) {
-      setError("Invalid short URL.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError("");
-      setMessage("");
-      setShortUrl("");
-      setReadData(undefined);
-
-      const response = await fetch(`/api/${shortId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = await response.json();
-      console.log(data);
-      setReadData(data);
-      readFormRef.current?.reset();
-    } catch (error) {
-      console.error(error);
-      setError("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  function startFetching() {
+    resetStates();
+    setLoading(true);
   }
 
-  async function handleUpdate(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const formData = new FormData(event.currentTarget);
-    const shortUrl = formData.get("shortUrl") as string;
-    const longUrl = formData.get("longUrl") as string;
-
-    if (!shortUrl) {
-      setError("Please enter short URL.");
-      return;
-    } else if (!longUrl) {
-      setError("Please enter long URL.");
-      return;
-    } else if (longUrl.length < 50) {
-      setError("Long URL must be at least 50 characters.");
-      return;
-    }
-
-    const shortId = shortUrl.split("/").pop();
-
-    if (!shortId) {
-      setError("Invalid short URL.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError("");
-      setMessage("");
-      setShortUrl("");
-      setReadData(undefined);
-
-      const response = await fetch(`/api/${shortId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ longUrl }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update URL.");
-      }
-
-      setMessage("Long URL updated successfully.");
-    } catch (error) {
-      console.error(error);
-      setError("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  function stopFetching() {
+    setLoading(false);
   }
 
-  async function handleDelete(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const handleSuccess = (data: Partial<UrlData>, message?: string) => {
+    setLoading(false);
+    setError("");
+    setMessage(message || "");
+    setUrlData(data as UrlData);
+  };
 
-    const formData = new FormData(event.currentTarget);
-    const shortUrl = formData.get("shortUrl") as string;
-
-    if (!shortUrl) {
-      setError("Please enter short URL.");
-      return;
-    }
-
-    const shortId = shortUrl.split("/").pop();
-
-    if (!shortId) {
-      setError("Invalid short URL.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError("");
-      setMessage("");
-      setShortUrl("");
-      setReadData(undefined);
-
-      const response = await fetch(`/api/${shortId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update URL.");
-      }
-
-      setMessage("Short URL deleted successfully.");
-    } catch (error) {
-      console.error(error);
-      setError("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const handleError = (err: Error, defaultMsg: string) => {
+    console.error(err);
+    setError(err.message || defaultMsg);
+    setLoading(false);
+  };
 
   return (
     <main className="container-fluid flex-grow-1 mt-5">
@@ -224,152 +58,74 @@ export default function Main() {
       >
         <select
           className="form-select mb-3"
-          onChange={({ target }) => setMethod(target.value)}
+          value={method}
+          onChange={({ target }) => setMethod(target.value as Method)}
         >
           <option value="create">Create</option>
           <option value="read">Read</option>
           <option value="update">Update</option>
           <option value="delete">Delete</option>
         </select>
+
         {method === "create" && (
-          <form className="w-100" ref={createFormRef} onSubmit={handleCreate}>
-            <div className="form-floating mb-3">
-              <input
-                type="url"
-                className="form-control"
-                name="longUrl"
-                id="longUrl"
-                placeholder=""
-              />
-              <label htmlFor="longUrl">Paste or enter long URL</label>
-              <button
-                type="submit"
-                className="btn position-absolute top-0 bottom-0 end-0 border border-start-0 rounded-end bg-white"
-                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-              >
-                <i className="bi-play fs-3"></i>
-              </button>
-            </div>
-          </form>
-        )}
-        {method === "read" && (
-          <form className="w-100" onSubmit={handleRead} ref={readFormRef}>
-            <div className="form-floating mb-3">
-              <input
-                type="url"
-                className="form-control"
-                name="shortUrl"
-                id="shortUrl"
-                placeholder=""
-              />
-              <label htmlFor="shortUrl">Paste or enter short URL</label>
-              <button
-                type="submit"
-                className="btn position-absolute top-0 bottom-0 end-0 border border-start-0 rounded-end bg-white"
-                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-              >
-                <i className="bi-play fs-3"></i>
-              </button>
-            </div>
-          </form>
-        )}
-        {method === "update" && (
-          <form className="w-100" onSubmit={handleUpdate}>
-            <div className="form-floating mb-3">
-              <input
-                type="url"
-                className="form-control"
-                name="shortUrl"
-                id="shortUrl"
-                placeholder=""
-              />
-              <label htmlFor="shortUrl">Paste or enter short URL</label>
-              <button
-                type="submit"
-                className="btn position-absolute top-0 bottom-0 end-0 border border-start-0 rounded-end bg-white"
-                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-              >
-                <i className="bi-play fs-3"></i>
-              </button>
-            </div>
-            <div className="form-floating mb-3">
-              <input
-                type="url"
-                className="form-control"
-                name="longUrl"
-                id="longUrl"
-                placeholder=""
-              />
-              <label htmlFor="longUrl">
-                Paste or enter new long URL{" "}
-                <small className="form-text">
-                  (Note: Old long URL will be replaced)
-                </small>
-              </label>
-              <button
-                type="submit"
-                className="btn position-absolute top-0 bottom-0 end-0 border border-start-0 rounded-end bg-white"
-                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-              >
-                <i className="bi-play fs-3"></i>
-              </button>
-            </div>
-          </form>
-        )}
-        {method === "delete" && (
-          <form className="w-100" onSubmit={handleDelete}>
-            <div className="form-floating mb-3">
-              <input
-                type="url"
-                className="form-control"
-                name="shortUrl"
-                id="shortUrl"
-                placeholder=""
-              />
-              <label htmlFor="shortUrl">
-                Paste or enter short URL{" "}
-                <small className="text-danger form-text">
-                  (Note: This cannot be undone)
-                </small>
-              </label>
-              <button
-                type="submit"
-                className="btn position-absolute top-0 bottom-0 end-0 border border-start-0 rounded-end bg-white"
-                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-              >
-                <i className="bi-play fs-3"></i>
-              </button>
-            </div>
-          </form>
+          <CreateForm
+            onSuccess={handleSuccess}
+            onError={(err) =>
+              handleError(err, "An error occurred. Please try again.")
+            }
+            startFetching={startFetching}
+            stopFetching={stopFetching}
+          />
         )}
 
-        <div className="d-flex flex-column align-items-center gap-1">
-          {loading && <div className="spinner-border"></div>}
+        {method === "read" && (
+          <ReadForm
+            onSuccess={handleSuccess}
+            onError={(err) =>
+              handleError(err, "An error occurred. Please try again.")
+            }
+            setLoading={setLoading}
+          />
+        )}
+
+        {method === "update" && (
+          <UpdateForm
+            onSuccess={(data) =>
+              handleSuccess(data, "Long URL updated successfully.")
+            }
+            onError={(err) =>
+              handleError(err, "An error occurred. Please try again.")
+            }
+            setLoading={setLoading}
+          />
+        )}
+
+        {method === "delete" && (
+          <DeleteForm
+            onSuccess={() =>
+              handleSuccess({}, "Short URL deleted successfully.")
+            }
+            onError={(err) =>
+              handleError(err, "An error occurred. Please try again.")
+            }
+            setLoading={setLoading}
+          />
+        )}
+
+        <div className="d-flex flex-column align-items-center gap-1 mt-3">
+          {loading && <div className="spinner-border" role="status"></div>}
           {error && <div className="text-danger">{error}</div>}
-          {shortUrl && (
-            <div>
-              Short URL:{" "}
-              <a
-                href={shortUrl}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="text-decoration-none"
-              >
-                {shortUrl}
-              </a>
-            </div>
-          )}
-          {readData && (
+          {urlData && (
             <table className="table table-bordered">
               <tbody>
-                {Object.entries(readData).map(([key, value]) => (
+                {Object.entries(urlData).map(([key, value]) => (
                   <tr key={key}>
                     <td>
                       <strong>{key}</strong>
                     </td>
                     <td>
-                      {typeof value === "string" &&
-                      (key === "longUrl" || key === "shortUrl") ? (
+                      {["longUrl", "shortUrl"].includes(key) &&
+                      typeof value === "string" ? (
                         <a
                           href={value}
                           target="_blank"
@@ -378,11 +134,12 @@ export default function Main() {
                         >
                           {value}
                         </a>
-                      ) : key === "createdAt" || key === "updatedAt" ? (
+                      ) : ["createdAt", "updatedAt"].includes(key) &&
+                        typeof value === "string" ? (
                         `${format(
-                          value,
+                          new Date(value),
                           "EEE, MMM d, yyyy, hh:mm:ss a"
-                        )} (${formatDistanceToNow(value, {
+                        )} (${formatDistanceToNow(new Date(value), {
                           addSuffix: true,
                         })})`
                       ) : (
