@@ -47,6 +47,8 @@ export default function ReadForm({
 
       formRef.current?.reset();
     } catch (error) {
+      console.error(error);
+      
       onError(error as Error);
     } finally {
       setLoading(false);

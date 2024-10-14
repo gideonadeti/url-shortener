@@ -48,6 +48,8 @@ export default function CreateForm({
 
       formRef.current?.reset();
     } catch (error) {
+      console.error(error);
+      
       onError(error as Error);
     } finally {
       stopFetching();
