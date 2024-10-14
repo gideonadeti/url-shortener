@@ -58,17 +58,17 @@ export async function DELETE(
     const url = await readUrlByShortId(shortId);
 
     if (!url) {
-      return new Response(JSON.stringify({ error: "Invalid short URL." }), {
-        status: 404,
-      });
+      return Response.json({ error: "Invalid short URL." }, { status: 404 });
     }
 
     await deleteUrl(url.id);
-    return new Response("URL deleted successfully.", { status: 200 });
+
+    return Response.json(
+      { message: "Short URL deleted successfully." },
+      { status: 200 }
+    );
   } catch (error) {
     console.error(error);
-    return new Response(JSON.stringify({ error: "An error occurred." }), {
-      status: 500,
-    });
+    return Response.json({ error: "An error occurred." }, { status: 500 });
   }
 }
