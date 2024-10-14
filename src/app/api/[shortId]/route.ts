@@ -10,18 +10,14 @@ export async function GET(
     const url = await readUrlByShortId(shortId);
 
     if (!url) {
-      return new Response(
-        JSON.stringify({
-          error: "Invalid short URL.",
-        }),
-        { status: 404 }
-      );
+      return Response.json({ error: "Invalid short URL." }, { status: 404 });
     }
 
-    return new Response(JSON.stringify(url), { status: 200 });
+    return Response.json({ url }, { status: 200 });
   } catch (error) {
     console.error(error);
-    throw error;
+
+    return Response.json({ error: "An error occurred." }, { status: 500 });
   }
 }
 
